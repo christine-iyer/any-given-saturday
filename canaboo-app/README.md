@@ -9,8 +9,33 @@ Currently, two official plugins are available:
 
 ## React Compiler
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+# Canaboo Route Planner
 
-## Expanding the ESLint configuration
+## Local Development
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```zsh
+# Canaboo Route Planner
+
+## Local Development
+
+```zsh
+cd canaboo-app
+npm install
+npm run dev
+```
+
+## GitHub Pages Deployment
+
+This repo is configured to deploy from the `main` branch using GitHub Actions.
+
+1. Push to `main`.
+2. In GitHub, go to **Settings → Pages**.
+3. Set **Source** to **GitHub Actions**.
+
+The site will be available at:
+
+```
+https://christine-iyer.github.io/any-given-saturday/
+```
+
+Note: Vite `base` is set to `/any-given-saturday/` in `vite.config.js`.
