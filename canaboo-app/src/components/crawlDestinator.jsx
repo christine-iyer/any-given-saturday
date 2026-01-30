@@ -10,9 +10,15 @@ const DeliveryDestinations = () => {
   const [routeLoading, setRouteLoading] = useState(false);
   const [routeError, setRouteError] = useState('');
   const [coordsCache, setCoordsCache] = useState({});
+  const [customStartAddress, setCustomStartAddress] = useState({
+    Line1: '',
+    City: '',
+    CountrySubDivisionCode: '',
+    PostalCode: ''
+  });
 
   const MAX_ROUTE_DESTINATIONS = 14;
-  const START_ADDRESS = {
+  const DEFAULT_START_ADDRESS = {
     name: 'Start: 34 Atlantic St',
     ShipAddr: {
       Line1: '34 Atlantic St',
@@ -21,6 +27,21 @@ const DeliveryDestinations = () => {
       PostalCode: '04101'
     }
   };
+
+  const hasCustomStartAddress = Object.values(customStartAddress)
+    .some((value) => value.trim().length > 0);
+
+  const effectiveStartAddress = hasCustomStartAddress
+    ? {
+      name: 'Custom start',
+      ShipAddr: {
+        Line1: customStartAddress.Line1 || DEFAULT_START_ADDRESS.ShipAddr.Line1,
+        City: customStartAddress.City || DEFAULT_START_ADDRESS.ShipAddr.City,
+        CountrySubDivisionCode: customStartAddress.CountrySubDivisionCode || DEFAULT_START_ADDRESS.ShipAddr.CountrySubDivisionCode,
+        PostalCode: customStartAddress.PostalCode || DEFAULT_START_ADDRESS.ShipAddr.PostalCode
+      }
+    }
+    : DEFAULT_START_ADDRESS;
 
   useEffect(() => {
     // Load Maine destinations from our data
@@ -109,7 +130,7 @@ const DeliveryDestinations = () => {
     setRoute([]);
 
     try {
-      const startCoords = await geocodeDestination(START_ADDRESS);
+      const startCoords = await geocodeDestination(effectiveStartAddress);
       const destinationsWithCoords = [];
       for (const destination of selectedDestinations) {
         const coords = await geocodeDestination(destination);
@@ -163,7 +184,7 @@ const DeliveryDestinations = () => {
         <h3>📍 Available Destinations ({destinations.length})</h3>
         <p style={{ color: '#666', fontSize: '14px' }}>
           Select up to {MAX_ROUTE_DESTINATIONS} stops and optimize a route
-          starting from {START_ADDRESS.ShipAddr.Line1}, {START_ADDRESS.ShipAddr.City}.
+          starting from {effectiveStartAddress.ShipAddr.Line1}, {effectiveStartAddress.ShipAddr.City}.
         </p>
       </div>
 
@@ -176,7 +197,55 @@ const DeliveryDestinations = () => {
               Selected for route: {selectedDestinations.length} / {MAX_ROUTE_DESTINATIONS}
             </div>
             <div style={{ fontSize: '12px', color: '#777', marginTop: '4px' }}>
-              Start address: {START_ADDRESS.ShipAddr.Line1}, {START_ADDRESS.ShipAddr.City} {START_ADDRESS.ShipAddr.PostalCode}
+              Start address: {effectiveStartAddress.ShipAddr.Line1}, {effectiveStartAddress.ShipAddr.City} {effectiveStartAddress.ShipAddr.PostalCode}
+            </div>
+            <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#fff', borderRadius: '6px', border: '1px solid #eee' }}>
+              <div style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '6px' }}>Start address (optional)</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <input
+                  type="text"
+                  placeholder="Street"
+                  value={customStartAddress.Line1}
+                  onChange={(event) => setCustomStartAddress((prev) => ({
+                    ...prev,
+                    Line1: event.target.value
+                  }))}
+                  style={{ padding: '6px 8px', borderRadius: '4px', border: '1px solid #ddd' }}
+                />
+                <input
+                  type="text"
+                  placeholder="City"
+                  value={customStartAddress.City}
+                  onChange={(event) => setCustomStartAddress((prev) => ({
+                    ...prev,
+                    City: event.target.value
+                  }))}
+                  style={{ padding: '6px 8px', borderRadius: '4px', border: '1px solid #ddd' }}
+                />
+                <input
+                  type="text"
+                  placeholder="State"
+                  value={customStartAddress.CountrySubDivisionCode}
+                  onChange={(event) => setCustomStartAddress((prev) => ({
+                    ...prev,
+                    CountrySubDivisionCode: event.target.value.toUpperCase()
+                  }))}
+                  style={{ padding: '6px 8px', borderRadius: '4px', border: '1px solid #ddd' }}
+                />
+                <input
+                  type="text"
+                  placeholder="ZIP"
+                  value={customStartAddress.PostalCode}
+                  onChange={(event) => setCustomStartAddress((prev) => ({
+                    ...prev,
+                    PostalCode: event.target.value
+                  }))}
+                  style={{ padding: '6px 8px', borderRadius: '4px', border: '1px solid #ddd' }}
+                />
+              </div>
+              <div style={{ marginTop: '6px', fontSize: '11px', color: '#777' }}>
+                Leave blank to use {DEFAULT_START_ADDRESS.ShipAddr.Line1}.
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
               <button
@@ -283,7 +352,7 @@ const DeliveryDestinations = () => {
         <div style={{ marginTop: '30px', padding: '15px', backgroundColor: '#e8f0fe', borderRadius: '8px' }}>
           <h4>🧭 Optimized Route (heuristic)</h4>
           <div style={{ fontSize: '13px', color: '#444', marginBottom: '8px' }}>
-            <strong>Start:</strong> {START_ADDRESS.ShipAddr.Line1}, {START_ADDRESS.ShipAddr.City} {START_ADDRESS.ShipAddr.PostalCode}
+            <strong>Start:</strong> {effectiveStartAddress.ShipAddr.Line1}, {effectiveStartAddress.ShipAddr.City} {effectiveStartAddress.ShipAddr.PostalCode}
           </div>
           <ol style={{ margin: '10px 0', paddingLeft: '20px' }}>
             {route.map((step, index) => (
