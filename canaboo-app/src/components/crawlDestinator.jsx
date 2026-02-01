@@ -119,6 +119,24 @@ const DeliveryDestinations = () => {
     return earthRadius * c;
   };
 
+  const getRouteTime = async (fromCoords, toCoords) => {
+    try {
+      const url = `https://router.project-osrm.org/route/v1/driving/${fromCoords.lng},${fromCoords.lat};${toCoords.lng},${toCoords.lat}`;
+      const response = await fetch(url);
+      const data = await response.json();
+      if (data.routes && data.routes.length > 0) {
+        return {
+          duration: Math.round(data.routes[0].duration / 60),
+          distance: (data.routes[0].distance * 0.000621371).toFixed(1)
+        };
+      }
+      return null;
+    } catch (error) {
+      console.warn('OSRM time fetch failed, using distance only:', error);
+      return null;
+    }
+  };
+
   const buildOptimizedRoute = async () => {
     if (selectedDestinations.length < 2) {
       setRouteError('Select at least 2 destinations to optimize a route.');
@@ -154,14 +172,25 @@ const DeliveryDestinations = () => {
         });
 
         const nextStop = remaining.splice(nearestIndex, 1)[0];
+        const routeData = await getRouteTime(currentCoords, nextStop.coords);
+        const durationMinutes = routeData?.duration || Math.round((nearestDistance / 25) * 60);
+        
         ordered.push({
           ...nextStop,
-          distanceFromPrev: nearestDistance
+          distanceFromPrev: nearestDistance,
+          durationFromPrev: durationMinutes
         });
         currentCoords = nextStop.coords;
       }
 
-      setRoute(ordered);
+      const orderedWithTotal = ordered.map((stop, idx) => {
+        let timeFromStart = 0;
+        for (let i = 0; i <= idx; i++) {
+          timeFromStart += ordered[i].durationFromPrev;
+        }
+        return { ...stop, totalTimeFromStart: timeFromStart };
+      });
+      setRoute(orderedWithTotal);
     } catch (error) {
       console.error('Error optimizing route:', error);
       setRouteError(error.message || 'Failed to build route.');
@@ -356,16 +385,17 @@ const DeliveryDestinations = () => {
           </div>
           <ol style={{ margin: '10px 0', paddingLeft: '20px' }}>
             {route.map((step, index) => (
-              <li key={destinationKey(step.destination)} style={{ marginBottom: '6px' }}>
+              <li key={destinationKey(step.destination)} style={{ marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid #d0d7ff' }}>
                 <strong>{index + 1}. {step.destination.name}</strong> — {step.destination.ShipAddr.Line1}, {step.destination.ShipAddr.City}
-                <div style={{ fontSize: '12px', color: '#555' }}>
-                  {index === 0 ? 'From start' : 'From previous stop'}: {step.distanceFromPrev.toFixed(1)} miles
+                <div style={{ fontSize: '12px', color: '#555', marginTop: '4px' }}>
+                  <div>{index === 0 ? 'From start' : 'From previous stop'}: {step.distanceFromPrev.toFixed(1)} miles · ⏱ {step.durationFromPrev} min</div>
+                  <div style={{ color: '#1976d2', fontWeight: 'bold', marginTop: '2px' }}>Arrive at: ~{step.totalTimeFromStart} min from start</div>
                 </div>
               </li>
             ))}
           </ol>
-          <div style={{ fontSize: '12px', color: '#555' }}>
-            Route uses a nearest-neighbor heuristic based on geocoded addresses.
+          <div style={{ fontSize: '12px', color: '#555', marginTop: '12px', padding: '10px', backgroundColor: '#f0f6ff', borderRadius: '6px' }}>
+            <strong>Total route time:</strong> ~{route[route.length - 1]?.totalTimeFromStart || 0} minutes
           </div>
         </div>
       )}
