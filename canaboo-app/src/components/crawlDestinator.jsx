@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 import customersToImport from '../data/data.jsx';
+import ToDo from './toDo/toDo.jsx';
 
 const DeliveryDestinations = () => {
   const [destinations, setDestinations] = useState([]);
@@ -215,6 +216,12 @@ const DeliveryDestinations = () => {
           Select up to {MAX_ROUTE_DESTINATIONS} stops and optimize a route
           starting from {effectiveStartAddress.ShipAddr.Line1}, {effectiveStartAddress.ShipAddr.City}.
         </p>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+        <div style={{ gridColumn: 'span 2' }}>
+          <ToDo />
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
