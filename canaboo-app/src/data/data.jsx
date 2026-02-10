@@ -1,26 +1,26 @@
 const customersToImport = [
      {
-          name: "Another Round",
+          name: "Leah Coplon",
           ShipAddr: {
-               Line1: "549 Congress St",
+               Line1: "42 Atlantic St",
                City: "Portland",
                CountrySubDivisionCode: "ME",
                PostalCode: "04101"
           }
      },
      {
-          name: "Arabica",
+          name: "Chris Iyer",
           ShipAddr: {
-               Line1: "2 Free St",
-               City: "Portland",
+               Line1: "29 Longfellow Dr",
+               City: "Cape Elizabeth",
                CountrySubDivisionCode: "ME",
-               PostalCode: "04101"
+               PostalCode: "04107"
           }
      },
      {
-          name: "Bom Dia",
+          name: "Laura Cianchequette",
           ShipAddr: {
-               Line1: "47 India St",
+               Line1: "47 Grey St",
                City: "Portland",
                CountrySubDivisionCode: "ME",
                PostalCode: "04101"
